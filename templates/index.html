@@ -1,16 +1,27 @@
-<html>
-   <body>
-      <form action = "http://localhost:5000/login" method = "post">
-         <p>Enter Name:</p>
-         <p><input type = "text" name = "nm" /></p>
-         <p><input type = "submit" value = "submit" /></p>
-      </form>
-      {% for value in trains %}
-            <tr>
-               
-               <td> {{ value }} </td>
-            </tr>
-      {% endfor %}
+{% extends "base.html" %}
 
-   </body>
-</html>
+{% block title %}
+Home
+{% endblock %}
+
+{% block content %}
+
+<div class="container"> <br><br>
+   <center>
+      <h1>Welcome On Railway Registration Portal!</h1><br>
+   </center>
+   <div class="row">
+      <div class="col-md-12">
+         <center>
+            {% if session['user'] %}
+            <a class="btn btn-primary" href="/book-ticket">Book Ticket</a>
+            {% else %}
+            <a class="btn btn-primary" href="/login">Login</a>
+            <a class="btn btn-primary" href="/register">Register</a>
+            {% endif %}
+
+         </center>
+      </div>
+   </div>
+</div>
+{% endblock %}
