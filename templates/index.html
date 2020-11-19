@@ -14,7 +14,55 @@ Home
       <div class="col-md-12">
          <center>
             {% if session['user'] %}
-            <a class="btn btn-primary" href="/book-ticket">Book Ticket</a>
+            <div class="row">
+               <div class="col-md-6">
+                  <form id="train_form" action="/search-trains" method="POST">
+                     <div class="form-group">
+                        <label for="exampleFormControlSelect1">From Station</label>
+                        <select name="from" class="form-control selectpicker" id="exampleFormControlSelect1"
+                           data-live-search="true">
+                           {% for station in startpoints %}
+                           <option data-tokens="china">{{station}}</option>
+                           {% endfor %}
+                        </select>
+
+                     </div>
+                     <div class="form-group">
+                        <label for="exampleFormControlSelect2">To Station</label>
+                        <select name="to" class="form-control selectpicker" id="exampleFormControlSelect2"
+                           data-live-search="true">
+                           {% for station in endpoints %}
+                           <option data-tokens="china">{{station}}</option>
+                           {% endfor %}
+                        </select>
+
+                     </div>
+                     <div class="form-group">
+                        <label for="exampleInputEmail1">Date</label>
+                        <input type="date" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp"
+                           placeholder="Enter Username" name="date">
+                     </div>
+
+                     <button type="submit" class="btn btn-primary">Search</button>
+                  </form>
+               </div>
+               <div class="col-md-6">
+                  <table class="table">
+                     <thead>
+                        <tr>
+                           <th scope="col">Date</th>
+                           <th scope="col">From</th>
+                           <th scope="col">To</th>
+                           <th scope="col">AC</th>
+                           <th scope="col">Non AC</th>
+                        </tr>
+                     </thead>
+                     <tbody id="train_result">
+
+                     </tbody>
+                  </table>
+               </div>
+            </div>
             {% else %}
             <a class="btn btn-primary" href="/login">Login</a>
             <a class="btn btn-primary" href="/register">Register</a>
@@ -24,4 +72,45 @@ Home
       </div>
    </div>
 </div>
+{% endblock %}
+
+{% block script %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.13.18/js/bootstrap-select.min.js"
+   integrity="sha512-yDlE7vpGDP7o2eftkCiPZ+yuUyEcaBwoJoIhdXv71KZWugFqEphIS3PU60lEkFaz8RxaVsMpSvQxMBaKVwA5xg=="
+   crossorigin="anonymous"></script>
+<script>
+   $(function () {
+      $('.selectpicker').selectpicker();
+   });
+
+   $("#train_form").submit(function (e) {
+
+      e.preventDefault(); // avoid to execute the actual submit of the form.
+
+      var form = $(this);
+      var url = form.attr('action');
+
+      $.ajax({
+         type: "POST",
+         url: url,
+         data: form.serialize(), // serializes the form's elements.
+         success: function (data) {
+            var trainList = '';
+            for (var i = 0; i < data.length; i++) {
+               trainList+='<tr>';
+               trainList += " <td>" + data[i][1] + "</td> ";
+               trainList += "<td>" + data[i][2] + "</td> ";
+               trainList += "<td>" + data[i][3] + "</td> ";
+               trainList += "<td>" + data[i][4] + "</td> ";
+               trainList += "<td>" + data[i][5] + "</td> ";
+               trainList+='</tr>';
+            }
+
+            $("#train_result").html(trainList);
+         }
+      });
+
+
+   });
+</script>
 {% endblock %}

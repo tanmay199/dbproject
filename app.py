@@ -1,5 +1,5 @@
 from db.database import DBHELPER
-from flask import Flask, render_template, request, redirect, url_for, session
+from flask import Flask, render_template, request, redirect, url_for, session, jsonify
 
 app = Flask(__name__)
 
@@ -7,7 +7,19 @@ dbhelper=DBHELPER()
 
 @app.route('/')
 def index():
-   return render_template('index.html')
+   startpoints, endpoints = dbhelper.getallstations()
+   return render_template('index.html', startpoints=startpoints, endpoints=endpoints)
+
+@app.route('/search-trains', methods=['POST'])
+def search_trains():
+   if request.method=='POST':
+      from_station = request.form['from']
+      to_station = request.form['to']
+      date = request.form['date']
+
+      trains = dbhelper.gettrains(from_station, to_station, date)
+
+      return jsonify(trains)
 
 @app.route('/register', methods=['POST', 'GET'])
 def register():
