@@ -9,6 +9,8 @@ class DBHELPER:
             user="postgres",
             password="mypass")
 
+    # def getremainingseats(self):
+
     def getalltrain(self):
         cur = self.conn.cursor()
 

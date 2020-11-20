@@ -8,7 +8,7 @@ Home
 
 <div class="container"> <br><br>
    <center>
-      <h1>Welcome On Railway Registration Portal!</h1><br>
+      <h1>Book your Ticket!</h1><br>
    </center>
    <div class="row">
       <div class="col-md-12">
@@ -97,15 +97,15 @@ Home
          success: function (data) {
             var trainList = '';
             for (var i = 0; i < data.length; i++) {
-               trainList+='<tr>';
+               trainList+="<tr>";
                trainList += " <td>" + data[i][1] + "</td> ";
                trainList += "<td>" + data[i][2] + "</td> ";
                trainList += "<td>" + data[i][3] + "</td> ";
                trainList += "<td>" + data[i][4] + "</td> ";
                trainList += "<td>" + data[i][5] + "</td> ";
+               trainList+='<td><a href="/traindetails">Book</a></td>';
                trainList+='</tr>';
             }
-
             $("#train_result").html(trainList);
          }
       });

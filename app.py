@@ -10,6 +10,13 @@ def index():
    startpoints, endpoints = dbhelper.getallstations()
    return render_template('index.html', startpoints=startpoints, endpoints=endpoints)
 
+
+@app.route('/traindetails')
+def no_of_berths():
+  
+   return render_template('traindetails.html')
+
+
 @app.route('/search-trains', methods=['POST'])
 def search_trains():
    if request.method=='POST':
