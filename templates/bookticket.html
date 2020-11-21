@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}
+Login
+{% endblock %}
+
+{% block content %}
+
+<div class="container"> <br><br>
+    <center>
+        <h1>Enter Details</h1><br>
+    </center>
+    <div class="row">
+        <div class="col-md-6 mx-auto">
+            {% if err %}
+            <div class="alert alert-danger" role="alert">
+                {{ err }}
+            </div>
+            {% else %}
+            {% endif %}
+            <form method="POST">
+                {% for i in range(passenger) %}
+                <h2>
+                    Details for passenger {{i+1}}
+                </h2>
+                <input type="hidden" value={{passenger}} name="no_of_passengers">
+                <div class="form-group">
+                    <label for="exampleInputEmail1">Firstname</label>
+                    <input type="text" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp"
+                        placeholder="Enter Firstname" name="Firstname{{i+1}}">
+                </div>
+                <div class="form-group">
+                    <label for="exampleInputEmail2">Lastname</label>
+                    <input type="text" class="form-control" id="exampleInputEmail2" aria-describedby="emailHelp"
+                        placeholder="Enter Lastname" name="Lastname{{i+1}}">
+                </div>
+                <div class="form-group">
+                    <label for="exampleInputEmail3">Age</label>
+                    <input type="number" class="form-control" id="exampleInputEmail3" aria-describedby="emailHelp"
+                        placeholder="Enter Age" name="Age{{i+1}}">
+                </div>
+                <div class="form-group">
+                    <label for="exampleInputEmail4">Gender</label>
+                    <input type="text" class="form-control" id="exampleInputEmail4" aria-describedby="emailHelp"
+                        placeholder="Enter Gender" name="Gender{{i+1}}">
+                </div>
+                {% endfor %}
+                <button type="submit" class="btn btn-primary">Book</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

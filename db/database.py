@@ -7,9 +7,7 @@ class DBHELPER:
             host="localhost",
             database="postgres",
             user="postgres",
-            password="mypass")
-
-    # def getremainingseats(self):
+            password="1234")
 
     def getalltrain(self):
         cur = self.conn.cursor()
@@ -67,16 +65,16 @@ class DBHELPER:
         cur = self.conn.cursor()
         cur.execute('''select startpoint, endpoint from train''')
 
-        startpoint = []
-        endpoint = []
+        startpoint = set()
+        endpoint = set()
 
         for data in cur.fetchall():
-            startpoint.append(data[0])
-            endpoint.append(data[1])
+            startpoint.add(data[0])
+            endpoint.add(data[1])
 
         cur.close()
 
-        return startpoint, endpoint
+        return list(startpoint), list(endpoint)
 
     def gettrains(self, from_station, to_station, date):
         cur = self.conn.cursor()
@@ -90,3 +88,11 @@ class DBHELPER:
         cur.close()
 
         return trains
+
+    def gettraindetails(self,trainid, date):
+        cur =self.conn.cursor()
+        cur.execute('''select * from schedule where trainid=%s and dateofjourney=%s''',(trainid, date) )
+        temp = cur.fetchone()
+        cur.close()
+        return temp
+

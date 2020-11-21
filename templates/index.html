@@ -103,7 +103,7 @@ Home
                trainList += "<td>" + data[i][3] + "</td> ";
                trainList += "<td>" + data[i][4] + "</td> ";
                trainList += "<td>" + data[i][5] + "</td> ";
-               trainList+='<td><a href="/traindetails">Book</a></td>';
+               trainList+='<td><a href="/traindetails?trainid='+data[i][0]+'&date='+data[i][1]+'">Book</a></td>';
                trainList+='</tr>';
             }
             $("#train_result").html(trainList);

@@ -11,10 +11,18 @@ def index():
    return render_template('index.html', startpoints=startpoints, endpoints=endpoints)
 
 
-@app.route('/traindetails')
+@app.route('/traindetails' )
 def no_of_berths():
-  
+   trainid=request.args.get('trainid')
+   date=request.args.get('date')
+   #rint(trainid)
+   #print(date)
+   temp= dbhelper.gettraindetails(trainid, date)
+   print(temp)
    return render_template('traindetails.html')
+
+
+
 
 
 @app.route('/search-trains', methods=['POST'])
@@ -65,6 +73,22 @@ def login():
 def logout():
     session.pop('user', None)
     return redirect(url_for('index'))
+
+@app.route('/book-ticket' , methods = ['GET','POST'])
+def book_ticket():
+   if request.method=="GET":
+      seat_type= request.args["seat-type"]
+      no_of_seats= request.args["No of Seats"]
+      trainid= request.args["trainid"]
+      date= request.args["date"]
+      print(trainid, date)
+      return render_template('bookticket.html', passenger=int(no_of_seats), seat_type=seat_type)
+   else:
+      no_of_seats=int(request.form["no_of_passengers"])
+      for i in range(no_of_seats):
+         print(request.form["Firstname"+str(i+1)])
+      return "mallue"
+
 
 if __name__ == '__main__':
    app.secret_key = '32f607a8a551499b9fda0bb8175cbdbc'
