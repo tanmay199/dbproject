@@ -16,10 +16,10 @@ def no_of_berths():
    err= request.args.get("err")
    trainid=request.args.get('trainid')
    date=request.args.get('date')
-   #rint(trainid)
-   #print(date)
+   print("temp se pehle= ",trainid)
+   print(date)
    temp= dbhelper.gettraindetails(trainid, date)
-   print(temp)
+   print("temp= ",temp)
    start,end=dbhelper.getroute(trainid)
    return render_template('traindetails.html', err=err, start=start, end=end, date=date)
 
@@ -100,7 +100,7 @@ def book_ticket():
       if(available_seat>=int(no_of_seats)):
          return render_template('bookticket.html', passenger=int(no_of_seats), seat_type=seat_type)
       else:
-         return redirect(url_for('no_of_berths',err= {"err": "NOT AVAILABLE"}))
+         return redirect(url_for('no_of_berths',err= "SEATS NOT AVAILABLE", trainid=trainid, date=date))
    elif request.method=="POST":
       no_of_seats=int(request.form["no_of_passengers"])
       users=[]
@@ -122,7 +122,7 @@ def book_ticket():
       if res:
          return redirect(url_for('congrats'))
       else:
-         return redirect(url_for('no_of_berths',err="Ticket not Booked. Please Try Again!"))
+         return redirect(url_for('no_of_berths',err="Ticket not Booked. Please Try Again!", trainid=trainid, date=date))
 
 
 if __name__ == '__main__':

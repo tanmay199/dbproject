@@ -1,7 +1,7 @@
 import psycopg2
 import shortuuid
 
-no_of_seats_in_one_compartment = 4
+no_of_seats_in_one_compartment = 6
 
 class DBHELPER:
     def __init__(self):
@@ -100,7 +100,13 @@ class DBHELPER:
 
     def getroute(self, trainid):
         cur= self.conn.cursor()
-        cur.execute('''select startpoint, endpoint from train where trainid=%s''',(trainid,))
+        print("ROUTE TRAIN ID= ", trainid)
+        try:
+            cur.execute('''select startpoint, endpoint from train where trainid=%s''',(trainid,))
+        except Exception as err:
+            print(err)
+            res = False
+        
         start,end= cur.fetchone()
         cur.close()
         return start, end
