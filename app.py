@@ -13,16 +13,15 @@ def index():
 
 @app.route('/traindetails' )
 def no_of_berths():
+   err= request.args.get("err")
    trainid=request.args.get('trainid')
    date=request.args.get('date')
    #rint(trainid)
    #print(date)
    temp= dbhelper.gettraindetails(trainid, date)
    print(temp)
-   return render_template('traindetails.html')
-
-
-
+   start,end=dbhelper.getroute(trainid)
+   return render_template('traindetails.html', err=err, start=start, end=end, date=date)
 
 
 @app.route('/search-trains', methods=['POST'])
@@ -74,20 +73,56 @@ def logout():
     session.pop('user', None)
     return redirect(url_for('index'))
 
+@app.route('/congrats')
+def congrats():
+   
+   return render_template('congrats.html')
+
+
 @app.route('/book-ticket' , methods = ['GET','POST'])
 def book_ticket():
+   #filled_seats=0
+   #seat_type=""
    if request.method=="GET":
       seat_type= request.args["seat-type"]
       no_of_seats= request.args["No of Seats"]
       trainid= request.args["trainid"]
       date= request.args["date"]
       print(trainid, date)
-      return render_template('bookticket.html', passenger=int(no_of_seats), seat_type=seat_type)
-   else:
+      if(seat_type=="AC"):
+         seat_type="A"
+      else:
+         seat_type="N"
+      available_seat, filled_seats=dbhelper.checkavailability(trainid,date,seat_type)
+      #check here if available
+      #noonseatsof particular type available= 
+      
+      if(available_seat>=int(no_of_seats)):
+         return render_template('bookticket.html', passenger=int(no_of_seats), seat_type=seat_type)
+      else:
+         return redirect(url_for('no_of_berths',err= {"err": "NOT AVAILABLE"}))
+   elif request.method=="POST":
       no_of_seats=int(request.form["no_of_passengers"])
+      users=[]
       for i in range(no_of_seats):
          print(request.form["Firstname"+str(i+1)])
-      return "mallue"
+         first_name = request.form["Firstname"+str(i+1)]
+         last_name = request.form["Lastname"+str(i+1)]
+         age = request.form["Age"+str(i+1)]
+         gender = request.form["Gender"+str(i+1)]
+         users.append((first_name,last_name,age,gender))
+
+      trainid= request.args["trainid"]
+      date= request.args["date"]
+      userid=dbhelper.get_id_from_username(session["user"])
+      seat_type= request.form["seat_type"]
+      available_seat, filled_seats=dbhelper.checkavailability(trainid,date,seat_type)
+      print(trainid, date, userid, seat_type, available_seat, filled_seats)
+      res = dbhelper.addusers(users,trainid,date,userid,filled_seats, seat_type)
+      if res:
+         return redirect(url_for('congrats'))
+      else:
+         return redirect(url_for('no_of_berths',err="Ticket not Booked. Please Try Again!"))
 
 
 if __name__ == '__main__':

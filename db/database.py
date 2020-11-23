@@ -1,5 +1,7 @@
 import psycopg2
+import shortuuid
 
+no_of_seats_in_one_compartment = 4
 
 class DBHELPER:
     def __init__(self):
@@ -95,4 +97,110 @@ class DBHELPER:
         temp = cur.fetchone()
         cur.close()
         return temp
+
+    def getroute(self, trainid):
+        cur= self.conn.cursor()
+        cur.execute('''select startpoint, endpoint from train where trainid=%s''',(trainid,))
+        start,end= cur.fetchone()
+        cur.close()
+        return start, end
+
+    def get_id_from_username(self,username):
+        cur = self.conn.cursor()
+        cur.execute(''' SELECT id from userrecord where username=%s''',
+                        (username,))
+        userid=cur.fetchone()[0]
+        cur.close()
+        return userid
+
+    def findnextberthnum(self, filledseats,berthspercoach,seattype):
+        #tickets are 1 indexed
+        positions=['L','M','U']
+        currcoachnum=(filledseats//berthspercoach)+1 #1 for 1 indexing
+        seatnumtemp=(filledseats % berthspercoach)
+        # this is actual seatnumber(serially) but the seat has 3 components so
+        #seatnumtemp gives number of filled berths in curr coach(the serial seats not including position)
+        #seatnumtemp=3*(actualseatnum)+position
+        actualseatnum=seatnumtemp//3
+        posn=seatnumtemp % 3
+        # so the next to be filled seat is
+        actualseatnum+=1 # 1 indexing
+        #berth assigned= A_currcoachnum_actualseatnum+positions[posn]
+        berth=seattype+'_'+str(currcoachnum)+'_'+str(actualseatnum)+positions[posn]
+        return berth
+
+    def findallberthnums(self,filledseats,berthspercoach,seattype,numseats):
+        allberths=[]
+        while(numseats):
+            numseats-=1
+            allberths.append(self.findnextberthnum(filledseats,berthspercoach,seattype))
+            filledseats+=1
+        return allberths
+
+    def addusers(self, users, trainid, date, userid, filled_seats, seat_type):
+
+        cur = self.conn.cursor()
+        res = True
+        try:
+            pnr1=shortuuid.ShortUUID().random(length=10) #generate PNR
+            
+            #fetch user id
+            #berth no. logic
+            cur.execute('''INSERT INTO ticket(pnr, dateofjourney, trainID, user_id)
+                    VALUES(%s,%s,%s,%s)''',
+                            (pnr1, date, trainid, userid,))
+            print("ticketdobe")
+            berths= self.findallberthnums(filled_seats, no_of_seats_in_one_compartment, seat_type, len(users))
+            for j in range(len(users)):
+                #print(PNR, i)
+                i=users[j]
+                print("here",i)
+                berth = berths[j]
+                cur.execute('''INSERT INTO ticketdetail(pnr, firstname, lastname, age, gender, berth)
+                    VALUES(%s,%s,%s,%s,%s,%s)''',
+                            (pnr1, i[0], i[1], i[2], i[3],berth,))
+                
+            
+        except Exception as err:
+            print(err)
+            res = False
+        
+        cur.close()
+        self.conn.commit()
+
+        return res
+
+    
+    def checkavailability(self, trainid, date, seat_type):
+        
+        #cur = self.conn.cursor()
+        print(trainid)
+        cur = self.conn.cursor()
+        res=True
+        try:
+            cur.execute('''SELECT get_occupied_berth(%s,%s,%s) ''',
+                        (int(trainid),date,seat_type,))
+        except Exception as err:
+            print(err)
+            res = False
+        #print(res)
+        filled_seats=cur.fetchone()[0]
+        try:
+            cur.execute('''SELECT AC, nonAC FROM schedule WHERE trainID=%s AND dateofjourney=%s''',
+                        (trainid,date,))
+        except:
+            res = False
+        (ac_Seats,nonac_Seats)=cur.fetchone()
+        
+        print("ac=",ac_Seats,"nonac=",nonac_Seats,"filled=", filled_seats)
+        cur.close()
+        seat=0
+        if(seat_type=="A"):
+            seat=ac_Seats
+        else:
+            seat=nonac_Seats
+        available_seats= no_of_seats_in_one_compartment*seat - filled_seats
+        return available_seats, filled_seats
+        
+        
 
