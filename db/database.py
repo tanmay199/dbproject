@@ -1,7 +1,8 @@
 import psycopg2
 import shortuuid
 
-no_of_seats_in_one_compartment = 6
+no_of_seats_in_one_compartment_nonac = 24 
+no_of_seats_in_one_compartment_ac = 18
 
 class DBHELPER:
     def __init__(self):
@@ -57,10 +58,9 @@ class DBHELPER:
         if(res):
             dbpass = cur.fetchone()
 
-        if dbpass and password != dbpass[0]:
+        if password != dbpass[0]:
             res = False
-        if not dbpass:
-            res=False
+
         cur.close()
         self.conn.commit()
 
@@ -148,20 +148,35 @@ class DBHELPER:
         return userid
 
     def findnextberthnum(self, filledseats,berthspercoach,seattype):
-        #tickets are 1 indexed
-        positions=['L','M','U']
-        currcoachnum=(filledseats//berthspercoach)+1 #1 for 1 indexing
-        seatnumtemp=(filledseats % berthspercoach)
-        # this is actual seatnumber(serially) but the seat has 3 components so
-        #seatnumtemp gives number of filled berths in curr coach(the serial seats not including position)
-        #seatnumtemp=3*(actualseatnum)+position
-        actualseatnum=seatnumtemp//3
-        posn=seatnumtemp % 3
-        # so the next to be filled seat is
-        actualseatnum+=1 # 1 indexing
-        #berth assigned= A_currcoachnum_actualseatnum+positions[posn]
-        berth=seattype+'_'+str(currcoachnum)+'_'+str(actualseatnum)+positions[posn]
-        return berth
+        #tickets are 1 indexed 
+        if(seattype=='N'):
+            positions=['LB','MB','UB','LB','MB','UB','SL','SU']
+            currcoachnum=(filledseats//berthspercoach)+1 #1 for 1 indexing
+            seatnumtemp=(filledseats % berthspercoach)
+            # this is actual seatnumber(serially) but the seat has 3 components so
+            #seatnumtemp gives number of filled berths in curr coach(the serial seats not including position)
+            #seatnumtemp=3*(actualseatnum)+position
+            # actualseatnum=seatnumtemp//8
+            posn=seatnumtemp % 8
+            # so the next to be filled seat is
+            actualseatnum=seatnumtemp+1 # 1 indexing
+            #berth assigned= A_currcoachnum_actualseatnum+positions[posn]
+            berth=seattype+'_'+str(currcoachnum)+'_'+str(actualseatnum)+positions[posn]
+            return berth
+        else:
+            positions=['LB','LB','UB','UB','SL','SU']
+            currcoachnum=(filledseats//berthspercoach)+1 #1 for 1 indexing
+            seatnumtemp=(filledseats % berthspercoach)
+            # this is actual seatnumber(serially) but the seat has 3 components so
+            #seatnumtemp gives number of filled berths in curr coach(the serial seats not including position)
+            #seatnumtemp=3*(actualseatnum)+position
+            # actualseatnum=seatnumtemp//6
+            posn=seatnumtemp % 6
+            # so the next to be filled seat is
+            actualseatnum=seatnumtemp+1 # 1 indexing
+            #berth assigned= A_currcoachnum_actualseatnum+positions[posn]
+            berth=seattype+'_'+str(currcoachnum)+'_'+str(actualseatnum)+positions[posn]
+            return berth
 
     def findallberthnums(self,filledseats,berthspercoach,seattype,numseats):
         allberths=[]
@@ -182,8 +197,11 @@ class DBHELPER:
             cur.execute('''INSERT INTO ticket(pnr, dateofjourney, trainID, user_id)
                     VALUES(%s,%s,%s,%s)''',
                             (pnr1, date, trainid, userid,))
-            print("ticketdone")
-            berths= self.findallberthnums(filled_seats, no_of_seats_in_one_compartment, seat_type, len(users))
+            print("ticketdobe") 
+            num_seats=no_of_seats_in_one_compartment_ac
+            if(seat_type=='N'):
+                num_seats=no_of_seats_in_one_compartment_nonac
+            berths= self.findallberthnums(filled_seats, num_seats, seat_type, len(users))
             for j in range(len(users)):
                 #print(PNR, i)
                 i=users[j]
@@ -204,8 +222,7 @@ class DBHELPER:
         return res, pnr1, berths
 
     
-    def checkavailability(self, trainid, date, seat_type):
-        
+    def checkavailability(self, trainid, date, seat_type):  
         #cur = self.conn.cursor()
         print(trainid)
         cur = self.conn.cursor()
@@ -237,8 +254,8 @@ class DBHELPER:
             seat=ac_Seats
         else:
             seat=nonac_Seats
-        available_seats= no_of_seats_in_one_compartment*seat - filled_seats
+        num_seats=no_of_seats_in_one_compartment_ac
+        if(seat_type=='N'):
+                num_seats=no_of_seats_in_one_compartment_nonac
+        available_seats= num_seats*seat - filled_seats
         return available_seats, filled_seats
-        
-        
-
