@@ -9,23 +9,23 @@ class DBHELPER:
             host="localhost",
             database="postgres",
             user="postgres",
-            password="1234")
+            password="mypass")
 
     def getalltrain(self):
         cur = self.conn.cursor()
-
+        res=True
         # execute a statement
-        print('PostgreSQL database version:')
-        cur.execute('SELECT * from train')
-
-        # display the PostgreSQL database server version
-        db_version = cur.fetchall()
-        print(db_version)
-
+        try:
+            cur.execute('SELECT * from train')
+        except:
+            res = False
+        if(res):
+            trains = cur.fetchall()
+        print(trains)
         # close the communication with the PostgreSQL
         cur.close()
 
-        return db_version
+        return trains
 
     def register_user(self, username, first_name, last_name, credit_card, password, address):
 
@@ -53,7 +53,9 @@ class DBHELPER:
         except:
             res = False
 
-        dbpass = cur.fetchone()
+        dbpass="*"
+        if(res):
+            dbpass = cur.fetchone()
 
         if password != dbpass[0]:
             res = False
@@ -65,14 +67,18 @@ class DBHELPER:
 
     def getallstations(self):
         cur = self.conn.cursor()
-        cur.execute('''select startpoint, endpoint from train''')
-
+        res=True
+        try:
+            cur.execute('''select startpoint, endpoint from train''')
+        except Exception as err:
+            print(err)
+            res = False
         startpoint = set()
         endpoint = set()
-
-        for data in cur.fetchall():
-            startpoint.add(data[0])
-            endpoint.add(data[1])
+        if(res):
+            for data in cur.fetchall():
+                startpoint.add(data[0])
+                endpoint.add(data[1])
 
         cur.close()
 
@@ -80,42 +86,63 @@ class DBHELPER:
 
     def gettrains(self, from_station, to_station, date):
         cur = self.conn.cursor()
-        cur.execute('''select train.trainID, dateofjourney, startpoint, endpoint, AC, nonAC FROM train LEFT JOIN schedule
+        res=True
+        try:
+            cur.execute('''select train.trainID, dateofjourney, startpoint, endpoint, AC, nonAC FROM train LEFT JOIN schedule
             ON train.trainID = schedule.trainID where train.startpoint = %s and
              train.endpoint = %s and dateofjourney >= %s order by dateofjourney''',
                 (from_station, to_station, date))
-
-        trains = cur.fetchall()[:5]
-
+        except Exception as err:
+            print(err)
+            res = False
+        trains=[]
+        if(res):
+            trains = cur.fetchall()[:5]
         cur.close()
 
         return trains
 
     def gettraindetails(self,trainid, date):
         cur =self.conn.cursor()
-        cur.execute('''select * from schedule where trainid=%s and dateofjourney=%s''',(trainid, date) )
-        temp = cur.fetchone()
+        res=True
+        try:
+            cur.execute('''select * from schedule where trainid=%s and dateofjourney=%s''',(trainid, date) )
+        except Exception as err:
+            print(err)
+            res = False
+        if(res):
+            temp = cur.fetchone()
         cur.close()
         return temp
 
     def getroute(self, trainid):
         cur= self.conn.cursor()
         print("ROUTE TRAIN ID= ", trainid)
+        res=True
         try:
             cur.execute('''select startpoint, endpoint from train where trainid=%s''',(trainid,))
         except Exception as err:
             print(err)
             res = False
         
-        start,end= cur.fetchone()
+        start,end="",""
+        if(res):
+            start,end= cur.fetchone()
         cur.close()
         return start, end
 
     def get_id_from_username(self,username):
         cur = self.conn.cursor()
-        cur.execute(''' SELECT id from userrecord where username=%s''',
-                        (username,))
-        userid=cur.fetchone()[0]
+        res=True
+        try:
+            cur.execute(''' SELECT id from userrecord where username=%s''',
+                            (username,))
+        except Exception as err:
+            print(err)
+            res = False
+        userid=-1
+        if(res):
+            userid=cur.fetchone()[0]
         cur.close()
         return userid
 
@@ -149,7 +176,6 @@ class DBHELPER:
         res = True
         try:
             pnr1=shortuuid.ShortUUID().random(length=10) #generate PNR
-            
             #fetch user id
             #berth no. logic
             cur.execute('''INSERT INTO ticket(pnr, dateofjourney, trainID, user_id)
@@ -190,13 +216,18 @@ class DBHELPER:
             print(err)
             res = False
         #print(res)
-        filled_seats=cur.fetchone()[0]
+        filled_seats=0
+        if(res):
+            filled_seats=cur.fetchone()[0]
+        res=True
         try:
             cur.execute('''SELECT AC, nonAC FROM schedule WHERE trainID=%s AND dateofjourney=%s''',
                         (trainid,date,))
         except:
             res = False
-        (ac_Seats,nonac_Seats)=cur.fetchone()
+        ac_Seats,nonac_Seats=0,0
+        if(res):
+            (ac_Seats,nonac_Seats)=cur.fetchone()
         
         print("ac=",ac_Seats,"nonac=",nonac_Seats,"filled=", filled_seats)
         cur.close()

@@ -19,4 +19,4 @@ $$ LANGUAGE plpgsql;
 
 
 
-SELECT get_occupied_berth(3,'2020-11-21', 'A', 2);
+-- SELECT get_occupied_berth(3,'2020-11-21', 'A', 2);
