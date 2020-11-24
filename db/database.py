@@ -9,7 +9,7 @@ class DBHELPER:
             host="localhost",
             database="postgres",
             user="postgres",
-            password="mypass")
+            password="1234")
 
     def getalltrain(self):
         cur = self.conn.cursor()
@@ -57,9 +57,10 @@ class DBHELPER:
         if(res):
             dbpass = cur.fetchone()
 
-        if password != dbpass[0]:
+        if dbpass and password != dbpass[0]:
             res = False
-
+        if not dbpass:
+            res=False
         cur.close()
         self.conn.commit()
 
@@ -181,7 +182,7 @@ class DBHELPER:
             cur.execute('''INSERT INTO ticket(pnr, dateofjourney, trainID, user_id)
                     VALUES(%s,%s,%s,%s)''',
                             (pnr1, date, trainid, userid,))
-            print("ticketdobe")
+            print("ticketdone")
             berths= self.findallberthnums(filled_seats, no_of_seats_in_one_compartment, seat_type, len(users))
             for j in range(len(users)):
                 #print(PNR, i)
@@ -200,7 +201,7 @@ class DBHELPER:
         cur.close()
         self.conn.commit()
 
-        return res
+        return res, pnr1, berths
 
     
     def checkavailability(self, trainid, date, seat_type):

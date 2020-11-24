@@ -9,6 +9,12 @@ Congrats
 <div class="container"> <br><br>
     <center>
         <h1>Congrats! Have a safe Journey!!</h1><br>
+        <h3>Your PNR is {{pnr}}</h3><br>
+        <h3>Allocated berths are:</h3><br>
+        {% for berth in berths %}
+        <option data-tokens="china"><h3>{{berth}}</h3></option>
+        {% endfor %}
+        
     </center>
     
 </div>

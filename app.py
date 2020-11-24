@@ -73,10 +73,7 @@ def logout():
     session.pop('user', None)
     return redirect(url_for('index'))
 
-@app.route('/congrats')
-def congrats():
    
-   return render_template('congrats.html')
 
 
 @app.route('/book-ticket' , methods = ['GET','POST'])
@@ -118,9 +115,10 @@ def book_ticket():
       seat_type= request.form["seat_type"]
       available_seat, filled_seats=dbhelper.checkavailability(trainid,date,seat_type)
       print(trainid, date, userid, seat_type, available_seat, filled_seats)
-      res = dbhelper.addusers(users,trainid,date,userid,filled_seats, seat_type)
+      res, pnr, berths = dbhelper.addusers(users,trainid,date,userid,filled_seats, seat_type)
+
       if res:
-         return redirect(url_for('congrats'))
+         return render_template('congrats.html', pnr=pnr, berths=berths)
       else:
          return redirect(url_for('no_of_berths',err="Ticket not Booked. Please Try Again!", trainid=trainid, date=date))
 
